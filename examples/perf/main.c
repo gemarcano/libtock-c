@@ -4,7 +4,7 @@
 #include <perf.h>
 
 int main(void) {
-  unsigned count = perf_count();
+  unsigned count = driver_exists(DRIVER_PERF);
   unsigned cycles1 = perf_cycles();
   unsigned cycles2 = perf_cycles();
   printf("Perf available: %u\n", count);
