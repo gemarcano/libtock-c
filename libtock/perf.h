@@ -10,6 +10,7 @@ extern "C" {
 
 int perf_count(void);
 int perf_cycles(void);
+int perf_instructions_retired(void);
 
 #ifdef __cplusplus
 }
