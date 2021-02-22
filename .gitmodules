@@ -4,3 +4,6 @@
 [submodule "lvgl/lvgl"]
 	path = lvgl/lvgl
 	url = https://github.com/littlevgl/lvgl.git
+[submodule "examples/profiling"]
+	path = examples/profiling
+	url = git@github.com:ucsd-cse221-wi21/ucsd_cse221_wi21_GrantJiang_Pumuckl007_gemarcano.git
