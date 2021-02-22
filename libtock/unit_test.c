@@ -201,7 +201,7 @@ static void sync_with_supervisor(int svc) {
 
 static char failure_reason[sizeof(((unit_test_t *) 0)->reason)];
 void set_failure_reason(const char *reason) {
-  strncpy(failure_reason, reason, sizeof(failure_reason));
+  strncpy(failure_reason, reason, sizeof(failure_reason) - 1);
 }
 
 /** \brief Run a sequence of unit tests and report the results.
