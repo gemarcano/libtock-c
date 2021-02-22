@@ -35,11 +35,12 @@ int tock_enqueue(subscribe_cb cb, int arg0, int arg1, int arg2, void* ud) {
   return task_last;
 }
 
-void yield_for(bool *cond) {
-  while (!*cond) {
-    yield();
-  }
-}
+extern inline void yield_for(bool*);
+extern inline int command(uint32_t driver, uint32_t command, int data, int arg2);
+extern inline int subscribe(uint32_t driver, uint32_t subscribe,
+              subscribe_cb cb, void* userdata);
+extern inline int allow(uint32_t driver, uint32_t allow, void* ptr, size_t size);
+extern inline void* memop(uint32_t op_type, int arg1);
 
 #if defined(__thumb__)
 
@@ -80,65 +81,6 @@ void yield(void) {
   }
 }
 
-int subscribe(uint32_t driver, uint32_t subscribe,
-              subscribe_cb cb, void* userdata) {
-  register uint32_t r0 __asm__ ("r0") = driver;
-  register uint32_t r1 __asm__ ("r1") = subscribe;
-  register void*    r2 __asm__ ("r2") = cb;
-  register void*    r3 __asm__ ("r3") = userdata;
-  register int ret __asm__ ("r0");
-  __asm__ volatile (
-    "svc 1"
-    : "=r" (ret)
-    : "r" (r0), "r" (r1), "r" (r2), "r" (r3)
-    : "memory");
-  return ret;
-}
-
-
-int command(uint32_t driver, uint32_t command, int data, int arg2) {
-  register uint32_t r0 __asm__ ("r0") = driver;
-  register uint32_t r1 __asm__ ("r1") = command;
-  register uint32_t r2 __asm__ ("r2") = data;
-  register uint32_t r3 __asm__ ("r3") = arg2;
-  register int ret __asm__ ("r0");
-  __asm__ volatile (
-    "svc 2"
-    : "=r" (ret)
-    : "r" (r0), "r" (r1), "r" (r2), "r" (r3)
-    : "memory"
-    );
-  return ret;
-}
-
-int allow(uint32_t driver, uint32_t allow, void* ptr, size_t size) {
-  register uint32_t r0 __asm__ ("r0") = driver;
-  register uint32_t r1 __asm__ ("r1") = allow;
-  register void*    r2 __asm__ ("r2") = ptr;
-  register size_t r3 __asm__ ("r3")   = size;
-  register int ret __asm__ ("r0");
-  __asm__ volatile (
-    "svc 3"
-    : "=r" (ret)
-    : "r" (r0), "r" (r1), "r" (r2), "r" (r3)
-    : "memory"
-    );
-  return ret;
-}
-
-void* memop(uint32_t op_type, int arg1) {
-  register uint32_t r0 __asm__ ("r0") = op_type;
-  register int r1 __asm__ ("r1")      = arg1;
-  register void*   ret __asm__ ("r0");
-  __asm__ volatile (
-    "svc 4"
-    : "=r" (ret)
-    : "r" (r0), "r" (r1)
-    : "memory"
-    );
-  return ret;
-}
-
 #elif defined(__riscv)
 
 // Implementation of the syscalls for generic RISC-V platforms.
@@ -163,66 +105,6 @@ void yield(void) {
       );
 
   }
-}
-
-int subscribe(uint32_t driver, uint32_t subscribe,
-              subscribe_cb cb, void* userdata) {
-  register uint32_t a1  __asm__ ("a1") = driver;
-  register uint32_t a2  __asm__ ("a2") = subscribe;
-  register void*    a3  __asm__ ("a3") = cb;
-  register void*    a4  __asm__ ("a4") = userdata;
-  register int ret __asm__ ("a0");
-  __asm__ volatile (
-    "li    a0, 1\n"
-    "ecall\n"
-    : "=r" (ret)
-    : "r" (a1), "r" (a2), "r" (a3), "r" (a4)
-    : "memory");
-  return ret;
-}
-
-
-int command(uint32_t driver, uint32_t command, int data, int arg2) {
-  register uint32_t a1  __asm__ ("a1") = driver;
-  register uint32_t a2  __asm__ ("a2") = command;
-  register uint32_t a3  __asm__ ("a3") = data;
-  register uint32_t a4  __asm__ ("a4") = arg2;
-  register int ret __asm__ ("a0");
-  __asm__ volatile (
-    "li    a0, 2\n"
-    "ecall\n"
-    : "=r" (ret)
-    : "r" (a1), "r" (a2), "r" (a3), "r" (a4)
-    : "memory");
-  return ret;
-}
-
-int allow(uint32_t driver, uint32_t allow, void* ptr, size_t size) {
-  register uint32_t a1  __asm__ ("a1") = driver;
-  register uint32_t a2  __asm__ ("a2") = allow;
-  register void*    a3  __asm__ ("a3") = ptr;
-  register size_t a4  __asm__ ("a4")   = size;
-  register int ret __asm__ ("a0");
-  __asm__ volatile (
-    "li    a0, 3\n"
-    "ecall\n"
-    : "=r" (ret)
-    : "r" (a1), "r" (a2), "r" (a3), "r" (a4)
-    : "memory");
-  return ret;
-}
-
-void* memop(uint32_t op_type, int arg1) {
-  register uint32_t a1  __asm__ ("a1") = op_type;
-  register uint32_t a2  __asm__ ("a2") = arg1;
-  register void*    ret __asm__ ("a0");
-  __asm__ volatile (
-    "li    a0, 4\n"
-    "ecall\n"
-    : "=r" (ret)
-    : "r" (a1), "r" (a2)
-    : "memory");
-  return ret;
 }
 
 #endif
